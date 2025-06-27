@@ -139,7 +139,7 @@ if search_query:
 
         for i, path in enumerate(img_paths):
             with cols[i % len(cols)]:
-                st.image(path, use_column_width=True)
+                st.image(path, use_container_width=True)
                 key = f"search_{company}_{product}_{ptype}_{i}".replace(" ", "_")
                 if st.checkbox("Include", key=key):
                     selected_imgs.append(path)
@@ -177,7 +177,7 @@ else:
 
         for i, path in enumerate(img_paths):
             with cols[i % len(cols)]:
-                st.image(path, use_column_width=True)
+                st.image(path, use_container_width=True)
                 key = f"manual_{temp_key}_{i}"
                 if st.checkbox("Include", key=key):
                     if path not in selected_imgs:
