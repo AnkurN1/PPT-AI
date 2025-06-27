@@ -58,15 +58,14 @@ def create_beautiful_ppt(slide_data_list, include_intro_outro=True):
         product = slide_data.get('product', '')
         link = slide_data.get('link', '')
 
-        # Title (top-right)
-        title_shape = slide.shapes.add_textbox(prs.slide_width -Inches(13.1), Inches(0.17), Inches(4), Inches(0.7))
+        # Title (left aligned)
+        title_shape = slide.shapes.add_textbox(Inches(0.4), Inches(0.3), Inches(12), Inches(0.7))
         frame = title_shape.text_frame
         frame.text = product
         p = frame.paragraphs[0]
         p.font.size = Pt(16)
         p.font.italic = True
         p.font.color.rgb = RGBColor(0, 0, 0)
-        frame.word_wrap = True
 
         # Images
         y_img_top = 1.2
@@ -121,7 +120,6 @@ def create_beautiful_ppt(slide_data_list, include_intro_outro=True):
 
 # UI
 st.title("Product Selector with Search")
-
 search_query = st.text_input("Search by Type", "")
 
 if 'search_selection_keys' not in st.session_state:
@@ -134,24 +132,22 @@ if search_query:
         img_paths = get_image_list(company, product, ptype)
 
         st.markdown(f"### {product} - {ptype}")
-        cols = st.columns(min(4, len(img_paths)))
-        selected_imgs = []
-
-        for i, path in enumerate(img_paths):
-            with cols[i % len(cols)]:
-                st.image(path, use_container_width=True)
-                key = f"search_{company}_{product}_{ptype}_{i}".replace(" ", "_")
-                if st.checkbox("Include", key=key):
-                    selected_imgs.append(path)
-
-        temp_key = f"{company}_{product}_{ptype}".replace(" ", "_")
-        if selected_imgs:
-            st.session_state.ppt_items[temp_key] = {
-                "company": company,
-                "product": product,
-                "link": link,
-                "images": selected_imgs
-            }
+        if len(img_paths) > 0:
+            cols = st.columns(min(4, len(img_paths)))
+            selected_imgs = []
+            for i, path in enumerate(img_paths):
+                with cols[i % len(cols)]:
+                    st.image(path, use_container_width=True)
+                    key = f"search_{company}_{product}_{ptype}_{i}".replace(" ", "_")
+                    if st.checkbox("Include", key=key):
+                        selected_imgs.append(path)
+            if selected_imgs:
+                st.session_state.ppt_items[f"{company}_{product}_{ptype}".replace(" ", "_")] = {
+                    "company": company,
+                    "product": product,
+                    "link": link,
+                    "images": selected_imgs
+                }
 else:
     company = st.selectbox("Select Company", sorted(data['Company'].dropna().unique()), key="company")
     products = sorted(data[data['Company'] == company]['Product'].dropna().unique())
@@ -173,30 +169,23 @@ else:
         st.markdown(f"### {ptype}")
         if len(img_paths) > 0:
             img_cols = st.columns(min(4, len(img_paths)))
+            selected_imgs = st.session_state.temp_selection.get(f"{company}_{product}_{ptype}".replace(" ", "_"), {}).get("images", [])
             for i, path in enumerate(img_paths):
                 with img_cols[i % len(img_cols)]:
                     st.image(path, use_container_width=True)
-                    # your checkbox code...
+                    key = f"manual_{company}_{product}_{ptype}_{i}".replace(" ", "_")
+                    if st.checkbox("Include", key=key):
+                        if path not in selected_imgs:
+                            selected_imgs.append(path)
+            st.session_state.temp_selection[f"{company}_{product}_{ptype}".replace(" ", "_")] = {
+                "company": company,
+                "product": product,
+                "ptype": ptype,
+                "link": link,
+                "images": selected_imgs
+            }
         else:
             st.info("No images found for this type.")
-        temp_key = f"{company}_{product}_{ptype}".replace(" ", "_")
-        selected_imgs = st.session_state.temp_selection.get(temp_key, {}).get("images", [])
-
-        for i, path in enumerate(img_paths):
-            with cols[i % len(cols)]:
-                st.image(path, use_container_width=True)
-                key = f"manual_{temp_key}_{i}"
-                if st.checkbox("Include", key=key):
-                    if path not in selected_imgs:
-                        selected_imgs.append(path)
-
-        st.session_state.temp_selection[temp_key] = {
-            "company": company,
-            "product": product,
-            "ptype": ptype,
-            "link": link,
-            "images": selected_imgs
-        }
 
     for k, v in st.session_state.temp_selection.items():
         if v['images']:
