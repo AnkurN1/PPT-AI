@@ -171,7 +171,14 @@ else:
         img_paths = get_image_list(company, product, ptype)
 
         st.markdown(f"### {ptype}")
-        cols = st.columns(min(4, len(img_paths)))
+        if len(img_paths) > 0:
+            img_cols = st.columns(min(4, len(img_paths)))
+            for i, path in enumerate(img_paths):
+                with img_cols[i % len(img_cols)]:
+                    st.image(path, use_column_width=True)
+                    # your checkbox code...
+        else:
+            st.info("No images found for this type.")
         temp_key = f"{company}_{product}_{ptype}".replace(" ", "_")
         selected_imgs = st.session_state.temp_selection.get(temp_key, {}).get("images", [])
 
