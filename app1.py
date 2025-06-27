@@ -175,7 +175,7 @@ else:
             img_cols = st.columns(min(4, len(img_paths)))
             for i, path in enumerate(img_paths):
                 with img_cols[i % len(img_cols)]:
-                    st.image(path, use_column_width=True)
+                    st.image(path, use_container_width=True)
                     # your checkbox code...
         else:
             st.info("No images found for this type.")
