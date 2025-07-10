@@ -6,22 +6,28 @@ from pptx.dml.color import RGBColor
 from PIL import Image
 import os
 import gdown
-
+import zipfile
 
 @st.cache_resource
-def download_images_from_drive():
-    folder_id = "1AbCDeFGHIjkLmNopQRstuVWXYZ"  # Replace with your real ID
-    gdown.download_folder(
-        id=folder_id,
-        output="images",  # Downloads into ./images folder
-        quiet=False,
-        use_cookies=False
-    )
+def download_and_unzip_images():
+    file_id = "1YLEX1AEYAeABXD9x7ialI3UUBrLdzigF"  # ← replace with your real file ID
+    zip_path = "images.zip"
+    
+    # Download the zip file from Google Drive
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", zip_path, quiet=False)
+    
+    # Extract to 'images/' folder
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall("images")
+    
     return "images"
+
+IMAGE_BASE = download_and_unzip_images()
 
 # Load data
 data = pd.read_excel("all companys database.xlsx")
-IMAGE_BASE = download_images_from_drive()
+# IMAGE_BASE = download_images_from_drive()
+# st.write("Downloaded folders:", os.listdir(IMAGE_BASE)) 
 LOGO_BASE = "logo"
 
 if 'ppt_items' not in st.session_state:
